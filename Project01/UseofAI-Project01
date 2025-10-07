@@ -1,1 +1,24 @@
-
+[1]. Tool: ChatGPT
+     Prompt: Alter KNN with Grid Research
+     Output: knn_grid = Pipeline(steps=[
+                    ("prep", preprocessor),
+                    ("clf", KNeighborsClassifier())
+                ])
+                
+                param_grid = {
+                    "clf__n_neighbors": [3, 5, 7, 9],
+                    "clf__weights": ["uniform", "distance"],
+                    "clf__p": [1, 2],  # Manhattan vs Euclidean distance
+                }
+                
+                gscv = GridSearchCV(
+                    estimator=knn_grid,
+                    param_grid=param_grid,
+                    scoring="f1",  # balances precision & recall for the positive class
+                    cv=10,         # 10-fold cross-validation
+                    n_jobs=-1      # use all CPU cores available
+                )
+                
+                gscv.fit(X_train, y_train)
+                best_knn = gscv.best_estimator_
+                print(classification_report(y_test, best_knn.predict(X_test)))
