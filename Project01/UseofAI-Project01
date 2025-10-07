@@ -1,5 +1,8 @@
 [1]. Tool: ChatGPT
      Prompt: Alter KNN with Grid Research
+     from sklearn.model_selection import GridSearchCV
+     from sklearn.neighbors import KNeighborsClassifier
+     from sklearn.pipeline import Pipeline
      Output: knn_grid = Pipeline(steps=[
                     ("prep", preprocessor),
                     ("clf", KNeighborsClassifier())
