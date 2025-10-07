@@ -25,3 +25,62 @@
                 gscv.fit(X_train, y_train)
                 best_knn = gscv.best_estimator_
                 print(classification_report(y_test, best_knn.predict(X_test)))
+
+[2]. Tool: ChatGPT
+     Prompt: Can you help me with the Training and testing for this code
+import numpy as np
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+
+from sklearn.metrics import classification_report, accuracy_score
+
+# target + basic clean
+TARGET = "Outcome Type"
+assert TARGET in pets_used.columns
+
+df = pets_used.dropna(subset=[TARGET]).copy()
+y = df[TARGET].astype(str)
+
+# features = everything except target
+X = df.drop(columns=[TARGET])
+
+# figure out which columns are numeric/categorical after our selection
+num_cols = [c for c in X.columns if pd.api.types.is_numeric_dtype(X[c])]
+cat_cols = [c for c in X.columns if c not in num_cols]
+
+# stratified, reproducible split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.30, stratify=y, random_state=1
+)
+
+# common preprocessor
+numeric_pipe = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="median")),
+    ("scaler", StandardScaler())
+])
+
+categorical_pipe = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("ohe", OneHotEncoder(handle_unknown="ignore"))
+])
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ("num", numeric_pipe, num_cols),
+        ("cat", categorical_pipe, cat_cols),
+    ],
+    remainder="drop"
+)
+
+# handy function to print a full report
+def print_model_report(name, y_true, y_pred):
+    acc = accuracy_score(y_true, y_pred)
+    print(f"\n=== {name} ===")
+    print(f"Accuracy: {acc:0.4f}")
+    # For multi-class, macro avg treats all classes equally (not dominated by frequent classes)
+    print(classification_report(y_true, y_pred, digits=4))
